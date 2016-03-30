@@ -140,7 +140,8 @@ describe('capture session', function() {
                             height: opts.captureArea.height
                         })
                     })),
-                    clear: sinon.stub().returns(q())
+                    clear: sinon.stub().returns(q()),
+                    save: sinon.stub().returns(q())
                 };
                 this.browser.captureFullscreenImage.returns(q(image));
                 this.image = image;
@@ -272,58 +273,98 @@ describe('capture session', function() {
                     });
             });
 
-            it('should return page screenshot if left boundary is outside of image', function() {
+            it('should return error if left boundary is outside of image', function() {
                 this.setupImageEqualToDocument({
                     captureArea: {left: 1001}
                 });
 
+                return assert.isRejected(this.performCapture(), StateError);
+            });
+
+            it('should extend error with path to page screenshot if left boundary is outside of image', function() {
+                this.setupImageEqualToDocument({
+                    captureArea: {left: 1001}
+                });
+
+                temp.path.returns('/path/to/img');
+
                 return this.performCapture()
-                    .then(function(data) {
-                        assert.deepEqual(
-                            data.image.getSize(),
-                            {width: 1000, height: 1000}
+                    .fail(function(error) {
+                        assert.equal(
+                            error.imagePath,
+                            '/path/to/img'
                         );
                     });
             });
 
-            it('should return page screenshot if right boundary is outside of image', function() {
+            it('should return error if right boundary is outside of image', function() {
                 this.setupImageEqualToDocument({
                     captureArea: {left: 900, width: 101}
                 });
 
+                return assert.isRejected(this.performCapture(), StateError);
+            });
+
+            it('should extend error with path to page screenshot if right boundary is outside of image', function() {
+                this.setupImageEqualToDocument({
+                    captureArea: {left: 900, width: 101}
+                });
+
+                temp.path.returns('/path/to/img');
+
                 return this.performCapture()
-                    .then(function(data) {
-                        assert.deepEqual(
-                            data.image.getSize(),
-                            {width: 1000, height: 1000}
+                    .fail(function(error) {
+                        assert.equal(
+                            error.imagePath,
+                            '/path/to/img'
                         );
                     });
             });
 
-            it('should return page screenshot if top boundary is outside of image', function() {
+            it('should return error if top boundary is outside of image', function() {
                 this.setupImageEqualToDocument({
                     captureArea: {top: 1001}
                 });
 
+                return assert.isRejected(this.performCapture(), StateError);
+            });
+
+            it('should extend error with path to page screenshot if top boundary is outside of image', function() {
+                this.setupImageEqualToDocument({
+                    captureArea: {top: 1001}
+                });
+
+                temp.path.returns('/path/to/img');
+
                 return this.performCapture()
-                    .then(function(data) {
+                    .fail(function(error) {
                         assert.deepEqual(
-                            data.image.getSize(),
-                            {width: 1000, height: 1000}
+                            error.imagePath,
+                            '/path/to/img'
                         );
                     });
             });
 
-            it('should return page screenshot if bottom boundary is outside of image', function() {
+            it('should return error if bottom boundary is outside of image', function() {
                 this.setupImageEqualToDocument({
                     captureArea: {top: 900, height: 101}
                 });
 
+                return assert.isRejected(this.performCapture(), StateError);
+            });
+
+            it('should extend error with path to page screenshot if bottom boundary is outside of image', function() {
+                this.setupImageEqualToDocument({
+                    captureArea: {top: 900, height: 101}
+                });
+
+                temp.path.returns('/path/to/img');
+
                 return this.performCapture()
-                    .then(function(data) {
-                        assert.deepEqual(
-                            data.image.getSize(),
-                            {width: 1000, height: 1000}
+                    .fail(function(error) {
+                        assert.equal(
+                            error.imagePath,
+                            '/path/to/img'
                         );
                     });
             });
@@ -426,17 +467,28 @@ describe('capture session', function() {
                     });
             });
 
-            it('should return page screenshot if bottom border - offset is outside of image', function() {
+            it('should return error if bottom border - offset is outside of image', function() {
                 this.setupDocumentHigherThenImage({
                     captureArea: {top: 900, height: 101 + 1},
                     viewportOffset: {top: 1}
                 });
 
+                assert.isRejected(this.performCapture(), StateError);
+            });
+
+            it('should extend error with path to page screenshot if bottom border - offset outside image', function() {
+                this.setupDocumentHigherThenImage({
+                    captureArea: {top: 900, height: 101 + 1},
+                    viewportOffset: {top: 1}
+                });
+
+                temp.path.returns('/path/to/img');
+
                 return this.performCapture()
-                    .then(function(data) {
-                        assert.deepEqual(
-                            data.image.getSize(),
-                            {width: 1000, height: 1000}
+                    .fail(function(error) {
+                        assert.equal(
+                            error.imagePath,
+                            '/path/to/img'
                         );
                     });
             });
@@ -508,17 +560,28 @@ describe('capture session', function() {
                     });
             });
 
-            it('should return page screenshot if right border - offset is outside of image', function() {
+            it('should throw error if right border - offset is outside of image', function() {
                 this.setupDocumentWiderThenImage({
                     captureArea: {left: 900, width: 102},
                     viewportOffset: {left: 1}
                 });
 
+                return assert.isRejected(this.performCapture(), StateError);
+            });
+
+            it('should extend error with path to page screenshot if right border - offset outside image', function() {
+                this.setupDocumentWiderThenImage({
+                    captureArea: {left: 900, width: 102},
+                    viewportOffset: {left: 1}
+                });
+
+                temp.path.returns('/path/to/img');
+
                 return this.performCapture()
-                    .then(function(data) {
-                        assert.deepEqual(
-                            data.image.getSize(),
-                            {width: 1000, height: 1000}
+                    .fail(function(error) {
+                        assert.equal(
+                            error.imagePath,
+                            '/path/to/img'
                         );
                     });
             });
